@@ -10,9 +10,13 @@ use Illuminate\Support\Facades\App;
 
 use App\Posts;
 
+use Closure;
+
 use App\Category;
 
 use App\User;
+
+use App\Permission;
 
 use Purifier;
 
@@ -36,7 +40,7 @@ class PostsController extends Controller
 
     public function __construct()
     {
-        $this->middleware("auth");
+        $this->middleware("Posts");
     }
 
     public function index()

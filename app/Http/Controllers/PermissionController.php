@@ -106,6 +106,14 @@ class PermissionController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $per = Permission::find($id);
+        if ($per){
+            $per->delete();
+
+            session()->flash("success_delete_perm" , "You delete perm success")
+            return redirect()->route("settings");
+        } else {
+            return "Error 404 Not found";
+        }
     }
 }

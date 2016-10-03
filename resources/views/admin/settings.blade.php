@@ -7,8 +7,9 @@
 	<div class="content-wrapper">
 		<section class="content">
 			<div class="row">
-			@if (session()->has("success_add_perms"))	
+			@if (session()->has("success_add_perms") or session()->has("success_delete_perm"))	
 				<div class="alert alert-success">{{ session()->get("success_add_perms") }}</div>
+				<div class="alert alert-success">{{ session()->get("success_delete_perm") }}</div>
 			@endif
 				<div class="col-md-6">
 					<div class="btn btn-success" style="float: left;margin-bottom: 10px;" id="add_per">اضافة اذن</div>

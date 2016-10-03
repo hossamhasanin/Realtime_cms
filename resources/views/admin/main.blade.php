@@ -300,6 +300,11 @@
       </form>
       <!-- /.search form -->
       <!-- sidebar menu: : style can be found in sidebar.less -->
+        <?php 
+          use App\Permission;
+          $perss = Permission::find(Auth::user()->status);
+          $pure_depart = explode("," , $perss->departments);
+        ?>
       <ul class="sidebar-menu">
         <li class="header">MAIN NAVIGATION</li>
         <li class="active treeview">
@@ -308,8 +313,8 @@
             <span class="pull-right-container">
             </span>
           </a>
-
         </li>
+      @if (in_array("User", $pure_depart))
         <li class="treeview">
           <a href="#">
             <i class="fa fa-files-o"></i>
@@ -323,6 +328,8 @@
             <li><a href="{{ route('admin.users.index') }}"><i class="fa fa-circle-o"></i> ادارة ااعضاء</a></li>
           </ul>
         </li>
+      @endif
+      @if (in_array("Posts", $pure_depart))
         <li class="treeview">
           <a href="#">
             <i class="fa fa-pie-chart"></i>
@@ -336,6 +343,8 @@
             <li><a href="{{ route("admin.posts.index") }}"><i class="fa fa-circle-o"></i> ادارة مقالات</a></li>
           </ul>
         </li>
+      @endif
+      @if (in_array("Category", $pure_depart))
         <li class="treeview">
           <a href="#">
             <i class="fa fa-pie-chart"></i>
@@ -349,6 +358,7 @@
             <li><a href="{{ route("admin.categories.index") }}"><i class="fa fa-circle-o"></i> ادارة الاقسام</a></li>
           </ul>
         </li>
+      @endif
         <li class="treeview">
           <a href="{{ route("settings") }}">
             <i class="fa fa-pie-chart"></i>

@@ -20,7 +20,7 @@ class CategoryController extends Controller
 
     function __construct()
     {
-        $this->middleware("admin");
+        $this->middleware("Category");
     }
 
     public function index()
