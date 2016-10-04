@@ -1,6 +1,6 @@
 @extends("admin.main")
 
-@section("title" , "| Create post")
+@section("title" , "Edit :" . $post->name)
 
 @section("stylies")
 	
@@ -78,7 +78,11 @@
                  {{ Form::label("status" , "Status") }}
                  <select name="category" class="form-control">
                  @foreach($cats as $cat)
-                 	<option value='{{ $cat->id }}' @if($post->id == $cat->id) selected="" @endif>{{ $cat->name }}</option>
+                 	@if (isset($cat->name))
+                 		<option value='{{ $cat->name }}' @if($post->category->name == $cat->name) selected="" @endif>{{ $cat->name }}</option>
+                 	@else
+                 		<option value='{{ $cat }}' @if($post->category->name == $cat) selected="" @endif>{{ $cat }}</option>
+                 	@endif
                  @endforeach
                  </select>
                 </div>

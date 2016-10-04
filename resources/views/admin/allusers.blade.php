@@ -109,17 +109,17 @@
                 </tr>
                 </thead>
                 <tbody>
+                <?php use App\Permission; ?>
                 @foreach($users as $key => $user)
                 <tr>
                     <td>{{ $key + 1 }}</td>
                     <td>{{ $user->name }}</td>
                     <td>{{ $user->email }}</td>
+                    <?php
+                        $per = Permission::find($user->status);
+                    ?>
                     <td>
-                    @if($user->status == 1)
-                      Admin
-                    @else
-                      Normal user
-                    @endif
+                      {{ $per->name }}
                     </td>
                     <td><a href='{{ route("admin.users.edit" , ["id" => $user->id]) }}' class="btn btn-success">Edit</a> 
                     {{ Form::open(["route" => ["admin.users.destroy" , $user->id] , "method" => "delete" , "style" => "display: -moz-box;"]) }}
@@ -212,7 +212,11 @@
                 </div>
                 <div class="form-group">
                  {{ Form::label("status" , "Status") }}
-                 {{ Form::select("status" , ["1" => "Admin" , "0" => "Normal User"] , ["class" => "form-control"]) }}
+                 <select name="status" class="form-control">
+                  @foreach($perms as $perm)
+                      <option value="{{ $perm->id }}">{{ $perm->name }}</option>
+                  @endforeach
+                 </select>
                 </div>
                 <div class="form-group">
                   <img src="" id="reb_img" width="100" height="100" />

@@ -14,6 +14,8 @@ use Image;
 
 use Storage;
 
+use App\Permission;
+
 use App\Http\Requests;
 
 class UserController extends Controller
@@ -31,7 +33,8 @@ class UserController extends Controller
     {
         $users = User::paginate(10);
         $last_users = DB::table('users')->take(8)->orderBy('id', 'desc')->get();
-        return view("admin.allusers" , ["users" => $users , "last_users" => $last_users]);
+        $perms = Permission::get();
+        return view("admin.allusers" , ["users" => $users , "last_users" => $last_users , "perms" => $perms]);
     }
 
     /**
@@ -98,7 +101,8 @@ class UserController extends Controller
     public function edit($id)
     {
         $user = User::find($id);
-        return view("admin.edituser" , ["user" => $user]);
+        $perms = Permission::get();
+        return view("admin.edituser" , ["user" => $user , "perms" => $perms]);
     }
 
     /**

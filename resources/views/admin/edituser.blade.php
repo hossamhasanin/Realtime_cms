@@ -40,7 +40,11 @@
                 </div>
                 <div class="form-group">
                  {{ Form::label("status" , "Status") }}
-                 {{ Form::select("status" , ["1" => "Admin" , "0" => "Normal User"] , $user->status , ["class" => "form-control"]) }}
+                  <select name="status" class="form-control">
+                  @foreach($perms as $perm)
+                      <option value="{{ $perm->id }}" @if ($user->status == $perm->id) selected="" @endif >{{ $perm->name }}</option>
+                  @endforeach
+                 </select>
                 </div>
                 <div class="form-group">
                   <img src='{{ asset("images/users/$user->img") }}' id="reb_img" width="100" height="100" />

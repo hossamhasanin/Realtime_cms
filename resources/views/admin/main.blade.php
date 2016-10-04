@@ -366,9 +366,9 @@
           </a>
         </li>
         <li class="treeview">
-          <a href="{{ route("settings") }}">
+          <a href="{{ route("admin.Permission.index") }}">
             <i class="fa fa-pie-chart"></i>
-            <span>اضافة اذن جديد</span>
+            <span>ادارة اﻷذون</span>
           </a>
         </li>
         <li class="treeview">

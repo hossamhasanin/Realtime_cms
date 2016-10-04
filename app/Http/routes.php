@@ -23,7 +23,7 @@ Route::get('/', function () {
 	Route::resource("users" , "UserController");
 	Route::resource("posts" , "PostsController");
 	Route::resource("categories" , "CategoryController");
-	Route::resource("Permission" , "PermissionController" , ["except" => ["index"]]);
+	Route::resource("Permission" , "PermissionController" , ["except" => ["show" , "create"]]);
 	Route::get("settings" , ["as" => "settings" , "uses" => "PagesController@settings"]);
 
 	});

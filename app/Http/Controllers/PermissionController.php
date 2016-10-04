@@ -8,6 +8,8 @@ use App\Http\Requests;
 
 use App\Permission;
 
+use App\Category;
+
 class PermissionController extends Controller
 {
     /**
@@ -17,7 +19,9 @@ class PermissionController extends Controller
      */
     public function index()
     {
-        //
+        $pers = Permission::paginate(10);
+        $cats = Category::get();
+        return view("admin.allperms" , ["pers" => $pers , "cats" => $cats]);
     }
 
     /**
@@ -41,7 +45,8 @@ class PermissionController extends Controller
         $this->validate($request , [
                 "name" => "required|unique:permissions",
                 "dep" => "required",
-                "descrip" => "required"
+                "descrip" => "required",
+                "posts_control" => "required"
             ]);
         
 
@@ -50,6 +55,7 @@ class PermissionController extends Controller
         $perms->name = $request->name;
         $perms->description = $request->descrip;
         $perms->departments = $departs;
+        $perms->full_control_posts = $request->posts_control;
         if ($request->cats or $request->cats != ""){
             $cats = implode("," , $request->cats);
             $perms->categories = $cats;
@@ -83,7 +89,9 @@ class PermissionController extends Controller
      */
     public function edit($id)
     {
-        //
+        $perm = Permission::find($id);
+        $cats = Category::get();
+        return view("admin.editperm" , ["perm" => $perm , "cats" => $cats]);
     }
 
     /**
@@ -95,7 +103,31 @@ class PermissionController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $this->validate($request , [
+                "name" => "required|unique:permissions,name,$id",
+                "dep" => "required",
+                "descrip" => "required",
+                "posts_control" => "required"
+            ]);
+        
+
+        $departs = implode("," , $request->dep);
+        $perms = Permission::find($id);
+        $perms->name = $request->name;
+        $perms->description = $request->descrip;
+        $perms->departments = $departs;
+        $perms->full_control_posts = $request->posts_control;
+        if ($request->cats or $request->cats != ""){
+            $cats = implode("," , $request->cats);
+            $perms->categories = $cats;
+        } else {
+            $perms->categories = null;
+        }
+
+        $perms->save();
+
+        session()->flash("success_edit_perms" , "the permission edited success");
+        return redirect()->route("settings");
     }
 
     /**
@@ -110,7 +142,7 @@ class PermissionController extends Controller
         if ($per){
             $per->delete();
 
-            session()->flash("success_delete_perm" , "You delete perm success")
+            session()->flash("success_delete_perm" , "You delete perm success");
             return redirect()->route("settings");
         } else {
             return "Error 404 Not found";

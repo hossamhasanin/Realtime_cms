@@ -81,7 +81,11 @@
                  {{ Form::label("status" , "Status") }}
                  <select name="category" class="form-control">
                  @foreach($cats as $cat)
-                 	<option value='{{ $cat->id }}'>{{ $cat->name }}</option>
+                 	@if (isset($cat->name))
+                 		<option value='{{ $cat->name }}'>{{ $cat->name }}</option>
+                 	@else
+                 		<option value='{{ $cat->name }}'>{{ $cat->name }}</option>
+                 	@endif
                  @endforeach
                  </select>
                 </div>

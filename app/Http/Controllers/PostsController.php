@@ -45,7 +45,8 @@ class PostsController extends Controller
 
     public function index()
     {
-        if (Auth::user()->status == 1){
+        $user_per = Permission::find(Auth::user()->status);
+        if ($user_per->full_control_posts == 0){
             $posts = Posts::where("id" , Auth::user()->id)->paginate(10);
             $last_posts = Posts::take(8)->orderBy('id', 'desc')->get();
             return view("admin.allposts" , ["posts" => $posts , "last_posts" => $last_posts]);
@@ -63,8 +64,13 @@ class PostsController extends Controller
      */
     public function create()
     {
-        $cats = Category::get();
-        return view("admin.createpost" , ["cats" => $cats]);
+        $per = Permission::find(Auth::user()->status)->categories;
+        if ($per != null){
+            $pure_cats = explode("," , $per);
+        } else {
+            $pure_cats = Category::get();
+        }
+        return view("admin.createpost" , ["cats" => $pure_cats]);
     }
 
     /**
@@ -81,10 +87,17 @@ class PostsController extends Controller
                 "content" => "required|min:5",
                 "image" => "required|image",
             ]);
+        $per = Permission::find(Auth::user()->status)->categories;
+        $pure_cats = explode("," , $per);
+        if (!in_array($request->category , $pure_cats)){
+            return redirect()->route("dashboard");
+        } else {
+
         $post = new Posts;
         $post->title = $request->title;
         $post->slug = $request->slug;
-        $post->category_id = $request->category;
+        $find_cat = Category::where("name" , $request->category)->first();
+        $post->category_id = $find_cat->id;
         $post->content = Purifier::clean($request->content);
         $post->users_id = Auth::user()->id;
 
@@ -120,6 +133,8 @@ class PostsController extends Controller
         session()->flash("success_add_post" , "Success :) , The post:" . $request->title . "added");
         return redirect()->route("admin.posts.index");
 
+        }
+
     }
 
     /**
@@ -142,8 +157,13 @@ class PostsController extends Controller
     public function edit($id)
     {
         $post = Posts::find($id);
-        $cats = Category::get();
-        return view("admin.editpost" , ["post" => $post , "cats" => $cats]);
+        $per = Permission::find(Auth::user()->status)->categories;
+        if ($per != null){
+            $pure_cats = explode("," , $per);
+        } else {
+            $pure_cats = Category::get();
+        }
+        return view("admin.editpost" , ["post" => $post , "cats" => $pure_cats]);
     }
 
     /**
@@ -159,28 +179,37 @@ class PostsController extends Controller
             "title" => "required|max:255",
             "slug" => "required|unique:posts,slug,$id",
             "image" => "required|image|mimes:jpg,png,gif",
-            "category" => "required|alpha_num",
+            "category" => "required",
             ]);
-        $post = Posts::find($id);
-        $post->title = $request->title;
-        $post->slug = $request->slug;
-        $post->category_id = $request->category;
-        $post->users_id = Auth::user()->id;
-        $post->content = Purifier::clean($request->content);
+        $per = Permission::find(Auth::user()->status)->categories;
+        $pure_cats = explode("," , $per);
+        if (!in_array($request->category , $pure_cats)){
+            return redirect()->route("dashboard");
+        } else {
 
-        if ($request->hasFile("image")){
-            $image = $request->File("image");
-            $image_name = time() . "." . $image->getClientOriginalExtension();
-            $location = public_path("images/posts/".$image_name);
-            Storage::delete("posts/".$post->image);
-            Image::make($image)->resize(250 , 250)->save($location);
-            $post->image = $image_name;
+            $post = Posts::find($id);
+            $post->title = $request->title;
+            $post->slug = $request->slug;
+            $find_cat = Category::where("name" , $request->category)->first();
+            $post->category_id = $find_cat->id;
+            $post->users_id = Auth::user()->id;
+            $post->content = Purifier::clean($request->content);
+
+            if ($request->hasFile("image")){
+                $image = $request->File("image");
+                $image_name = time() . "." . $image->getClientOriginalExtension();
+                $location = public_path("images/posts/".$image_name);
+                Storage::delete("posts/".$post->image);
+                Image::make($image)->resize(250 , 250)->save($location);
+                $post->image = $image_name;
+            }
+
+            $post->save();
+
+            session()->flash("success_edit_post" , "Success :) , You add new thigs");
+            return redirect()->route("admin.posts.index");
+
         }
-
-        $post->save();
-
-        session()->flash("success_edit_post" , "Success :) , You add new thigs");
-        return redirect()->route("admin.posts.index");
 
     }
 
