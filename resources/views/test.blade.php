@@ -1,77 +1,119 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Laravel 5 | WebSockets</title>
-</head>
-<body>
-<div class="container-fluid">
-    <div class="row ">
-        <div class="col-xs-12">
-            <br/>
-           <input type="text" id="input" placeholder="Message…" />
-            <hr />
-            <pre id="output"></pre>
-
+<html>
+    <head>
+        <title></title>
+        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+        <style>
+            #chat {
+                width: 300px;
+            }
+            #input {
+                border: 1px solid #ccc;
+                width: 100%;
+                height: 30px;
+            }
+            #messages {
+                padding-top: 5px;
+            }
+            #messages > div {
+                background: #eee;
+                padding: 10px;
+                margin-bottom: 5px;
+                border-radius: 4px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="chat">
+            <input type="submit" id="sends" />
+            <input id="input" type="text" name="message" value="">
+            <div id="messages">
+            @foreach($allchat as $chat)
+                <div data-created_at="{{ $chat->created_at }}">{{ $chat->body }}</div>
+            @endforeach
+            </div>
         </div>
-    </div>
-</div>
 
+        <script>
+            var $messagesWrapper = $('#messages');
 
-<script>
-  var host   = 'ws://localhost:8889';
-  var socket = null;
-  var input  = document.getElementById('input');
-  var output = document.getElementById('output');
-  var print  = function (message) {
-      var samp       = document.createElement('samp');
-      samp.innerHTML = message + '\n';
-      output.appendChild(samp);
+            // Append message to the wrapper,
+            // which holds the conversation.
+            var appendMessage = function(data) {
+                var message = document.createElement('div');
+                message.innerHTML = data.body;
+                message.dataset.created_at = data.created_at;
+                $messagesWrapper.append(message);
+            };
 
-      return;
-  };
+            // Load messages from the server.
+            // After request is completed, queue
+            // another call
+            var updateMessages = function(timestamp) {
+                var lastMessage = $messagesWrapper.find('> div:last-child')[0];
+                $.ajax({
+                    type: "POST",
+                    url: '{{ route("allmess") }}',
+                    data: {
+                        "from": ! lastMessage ? '' : lastMessage.dataset.created_at , "_token": "{{ csrf_token() }}" , "timestamp": timestamp
+                    },
+                    success: function(data) {
+                       var obj = jQuery.parseJSON(data);
+                        // put the data_from_file into #response
+                        $('#response').html(obj.data_from_file);
+                        // call the function again, this time with the timestamp we just got from server.php
+                        setTimeout(updateMessages , 3000 , obj.timestamp);
+                    },
+                    error: function() {
+                        console.log('Ooops, something happened!');
+                    },
+                    dataType: 'json'
+                });
+            };
 
-  input.addEventListener('keyup', function (evt) {
-      if (13 === evt.keyCode) {
-          var msg = input.value;
+            // Send message to server.
+            // Server returns this message and message
+            // is appended to the conversation.
+            var sendMessage = function() {
+                if (document.getElementById("input").value.trim() === '') { return; }
 
-          if (!msg) {
-              return;
-          }
+                //input.disabled = true;
+                $.ajax({
+                    type: "POST",
+                    url: '{{ route("chat") }}',
+                    data: { "message": document.getElementById("input").value , "_token": "{{ csrf_token() }}" , "user": "koko" },
+                    success: function(message) {
+                        appendMessage(message);
+                    },
+                    error: function() {
+                        alert('Ooops, something happened!');
+                    },
+                    complete: function() {
+                        document.getElementById("input").value = '';
+                        document.getElementById("input").disabled = false;
+                    },
+                    dataType: 'json'
+                });
+            };
 
-          try {
-              socket.send(msg);
-              input.value = '';
-              input.focus();
-          } catch (e) {
-              console.log(e);
-          }
+            // Send message to the servet on enter
+            $('#input').on('keypress', function(e) {
+                // Enter is pressed
+                if (e.charCode === 13) {
+                    e.preventDefault();
+                    sendMessage(this);
+                }
+            });
 
-          return;
-      }
-  });
+            $("#sends").click(function() {
+                sendMessage();
 
-  try {
-      socket = new WebSocket(host);
-      socket.onopen = function () {
-          print('connection is opened');
-          input.focus();
+                return false;
+            });
 
-          return;
-      };
-      socket.onmessage = function (koko) {
-          print(koko.data);
-
-          return;
-      };
-      socket.onclose = function () {
-          print('connection is closed');
-
-          return;
-      };
-  } catch (e) {
-      console.log(e);
-  }
-</script>
-</body>
+            // Start loop which get messages from server.
+            $(function() {
+                updateMessages();
+            });
+        </script>
+    </body>
 </html>

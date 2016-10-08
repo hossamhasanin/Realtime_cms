@@ -2,9 +2,7 @@
 
 @section("title" , "| Dashboard")
 
-@section("stylies")
 
-  {{ Html::Script("stylies/socket.io.js") }}
 
 @section("content")
 
@@ -105,9 +103,7 @@
             </div>
             <div class="box-body chat" id="chat-box">
               <!-- chat item -->
-              <div class="item" id="defult-message">
-                <div class="alert alert-info">ابدأ محادثة</div>
-              </div>
+                  <div data-id="4"></div>
               <!-- /.item -->
             </div>
             <!-- /.chat -->
@@ -169,7 +165,19 @@
 
     // Socket
 
+    var chatBox = $("#chat-box");
+    var token = "{{ csrf_token() }}";
+    function bringmessages() {
+        var lastmessage = chatBox.find('> div:last-child')[0];
 
+        $.post('{{ route("allmess") }}', {"last": ! lastmessage ? "" : lastmessage.dataset.id , "_token": token}, function(data) {
+
+          datas = jQuery.parseJSON(data);
+
+                $( "#chat-box" ).append( "<div class='item' data-id='"+ datas.id +"'>"+"<img src='/images/users/"+ datas.user_img +"' alt='user image' class='online'>" + "<p class='message'><a href='#' class='name'><small class='text-muted pull-right'><i class='fa fa-clock-o'></i> Today</small>"+ datas.user +"</a>"+ datas.body +"</p>" +"</div>" );
+          bringmessages();
+        });
+    }
 
 
     function sendmessage(event){
@@ -178,13 +186,15 @@
           event.preventDefault();
 
            var message_content = document.getElementById('message_content').value;
-           var token = "{{ csrf_token() }}";
            var user = "{{ Auth::user()->name }}";
 
           if (message_content != "" ){
 
              $.post("{{ route("chat") }}", {"message": message_content , "_token": token , "user":user}, function(data) {
-                console.log(data);
+                
+                 $datas = jQuery.parseJSON(data);
+
+                  document.getElementById("chat-box").innerHTML += "<div class='item' data-id='"+ datas.id +"'>"+"<img src='/images/users/"+ datas.user_img +"' alt='user image' class='online'>" + "<p class='message'><a href='#' class='name'><small class='text-muted pull-right'><i class='fa fa-clock-o'></i> Today</small>"+ datas.user +"</a>"+ message_content +"</p>" +"</div>";
                 $("#message_content").val('');
             });
 
@@ -197,7 +207,7 @@
           return false;
         }
     }
-
+/*
     var online = document.getElementById("online");
     if (online.className == "btn btn-default btn-sm active"){
       var socket = io.connect('http://localhost:8890');
@@ -261,6 +271,10 @@
     } else {
         $( "#chat-box" ).append( "<div class='item'>" + "<div class='alert alert-info'>انت في وضع اﻷوفلين" + "</div>" +"</div>" );
     }
+*/
+   $(function() {
+     bringmessages();
+   });
 
   </script>
 

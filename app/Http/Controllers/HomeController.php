@@ -35,13 +35,13 @@ class HomeController extends Controller
         $users->online = 1;
         $users->save();
         $online_users = User::where("online" , 1)->get();
-
+/*
         $redis = LRedis::connection();
 
         $data = ['online_name' => $users->name, 'image' => $users->img];
 
         $redis->publish('online_users', json_encode($data));
-
+*/
 
         return view('admin.index' , ["online_users" => $online_users]);
     }

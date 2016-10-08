@@ -29,11 +29,12 @@ Route::get('/', function () {
 	});
 
     Route::post('/sendmessage', ["as" => "chat" , "uses" => "ChatController@sendMessage"]);
-/*
+    Route::post('/allmess', ["as" => "allmess" , "uses" => "ChatController@show_all_message"]);
+
     Route::get('testweb', function(){
-    	return view("test");
+    	$chat = App\Chat::get();
+    	return view("test" , ["allchat" => $chat]);
     });
-*/
 
 	Route::get("profile/{user}" , ["as" => "profile" , "uses" => "PagesController@profile"]);
 
